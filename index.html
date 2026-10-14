@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced 3D Stress Failure Theory Calculator — Tresca, von Mises, Coulomb-Mohr, Maximum Normal Stress. Compute Factor of Safety with interactive failure envelope visualization.">
+    <title>Failure Theory Calculator — 3D Stress Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ===== Header ===== -->
+    <header id="app-header">
+        <div class="header-inner">
+            <div class="header-badge">σ</div>
+            <div class="header-text">
+                <h1>Failure Theory Calculator</h1>
+                <p class="subtitle">3D Stress Analysis — Multi-Theory Comparison</p>
+            </div>
+            <div class="header-tags">
+                <span class="tag">von Mises</span>
+                <span class="tag">Tresca</span>
+                <span class="tag">Coulomb-Mohr</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Main Content ===== -->
+    <main id="app-main">
+
+        <!-- Row 1: Material + Stress Inputs -->
+        <div class="input-row">
+
+            <!-- Material Properties Card -->
+            <section id="material-panel" class="card" aria-label="Material Properties">
+                <div class="card-header">
+                    <span class="card-icon">🔩</span>
+                    <h2>Define Your Material</h2>
+                </div>
+                <form id="material-form">
+                    <div class="form-grid-2col">
+                        <div class="input-group">
+                            <label for="input-syt">
+                                <span class="label-main">Tensile Yield Strength, S<sub>yt</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-syt" step="any" placeholder="e.g. 250" required>
+                            <span class="input-error" id="error-syt"></span>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-syc">
+                                <span class="label-main">Compressive Yield Strength, S<sub>yc</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-syc" step="any" placeholder="e.g. 250" required>
+                            <span class="input-error" id="error-syc"></span>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-sut">
+                                <span class="label-main">Ultimate Tensile Strength, S<sub>ut</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-sut" step="any" placeholder="e.g. 400" required>
+                            <span class="input-error" id="error-sut"></span>
+                        </div>
+                        <div class="input-group">
+                            <label for="input-suc">
+                                <span class="label-main">Ultimate Compressive Strength, S<sub>uc</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-suc" step="any" placeholder="e.g. 400" required>
+                            <span class="input-error" id="error-suc"></span>
+                        </div>
+                    </div>
+                    <div class="input-group target-sf-group">
+                        <label for="input-target-sf">
+                            <span class="label-main">🎯 Target Safety Factor, n<sub>target</sub></span>
+                        </label>
+                        <input type="number" id="input-target-sf" step="any" value="1" placeholder="e.g. 2.0" required>
+                        <span class="input-error" id="error-target-sf"></span>
+                    </div>
+                </form>
+            </section>
+
+            <!-- 3D Stress State Card -->
+            <section id="stress-panel" class="card" aria-label="3D Stress State">
+                <div class="card-header">
+                    <span class="card-icon">📐</span>
+                    <h2>3D Stress State</h2>
+                </div>
+                <form id="stress-form">
+                    <p class="section-label">Normal Stresses</p>
+                    <div class="form-grid-3col">
+                        <div class="input-group">
+                            <label for="input-sx">
+                                <span class="label-main">σ<sub>x</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-sx" step="any" placeholder="0" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-sy-stress">
+                                <span class="label-main">σ<sub>y</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-sy-stress" step="any" placeholder="0" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-sz">
+                                <span class="label-main">σ<sub>z</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-sz" step="any" placeholder="0" value="0">
+                        </div>
+                    </div>
+                    <p class="section-label">Shear Stresses</p>
+                    <div class="form-grid-3col">
+                        <div class="input-group">
+                            <label for="input-txy">
+                                <span class="label-main">τ<sub>xy</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-txy" step="any" placeholder="0" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-tyz">
+                                <span class="label-main">τ<sub>yz</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-tyz" step="any" placeholder="0" value="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-txz">
+                                <span class="label-main">τ<sub>xz</sub></span>
+                                <span class="label-unit">MPa</span>
+                            </label>
+                            <input type="number" id="input-txz" step="any" placeholder="0" value="0">
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-bar">
+            <button type="button" id="btn-calculate" class="btn btn-primary">
+                <span class="btn-icon">▶</span> Calculate All Theories
+            </button>
+            <button type="button" id="btn-reset" class="btn btn-secondary">
+                <span class="btn-icon">↺</span> Reset
+            </button>
+        </div>
+
+        <!-- ===== Results Section ===== -->
+        <div id="results-section" class="hidden">
+
+            <!-- Row 2: Tensor + Principal Stresses -->
+            <div class="results-row-2col">
+                <!-- Stress Tensor Display -->
+                <section id="tensor-panel" class="card" aria-label="Stress Tensor">
+                    <div class="card-header">
+                        <span class="card-icon">▦</span>
+                        <h2>Applied Stress Tensor</h2>
+                    </div>
+                    <div class="tensor-display">
+                        <span class="tensor-label">[σ] =</span>
+                        <div class="matrix-bracket">
+                            <table class="matrix-table" id="tensor-table">
+                                <tr>
+                                    <td id="t-xx">—</td>
+                                    <td id="t-xy">—</td>
+                                    <td id="t-xz">—</td>
+                                </tr>
+                                <tr>
+                                    <td id="t-yx">—</td>
+                                    <td id="t-yy">—</td>
+                                    <td id="t-yz">—</td>
+                                </tr>
+                                <tr>
+                                    <td id="t-zx">—</td>
+                                    <td id="t-zy">—</td>
+                                    <td id="t-zz">—</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <span class="tensor-unit-label">MPa</span>
+                    </div>
+                </section>
+
+                <!-- Principal Stresses Display -->
+                <section id="principal-panel" class="card" aria-label="Principal Stresses">
+                    <div class="card-header">
+                        <span class="card-icon">⊕</span>
+                        <h2>Principal Stresses</h2>
+                    </div>
+                    <div class="principal-grid">
+                        <div class="principal-item sigma1">
+                            <span class="principal-label">σ₁</span>
+                            <span class="principal-value" id="res-s1">—</span>
+                            <span class="principal-unit">MPa</span>
+                            <span class="principal-tag">Max</span>
+                        </div>
+                        <div class="principal-item sigma2">
+                            <span class="principal-label">σ₂</span>
+                            <span class="principal-value" id="res-s2">—</span>
+                            <span class="principal-unit">MPa</span>
+                            <span class="principal-tag">Mid</span>
+                        </div>
+                        <div class="principal-item sigma3">
+                            <span class="principal-label">σ₃</span>
+                            <span class="principal-value" id="res-s3">—</span>
+                            <span class="principal-unit">MPa</span>
+                            <span class="principal-tag">Min</span>
+                        </div>
+                    </div>
+                    <div class="max-shear-display">
+                        <span>Maximum Shear Stress:</span>
+                        <strong>τ<sub>max</sub> = <span id="res-tmax">—</span> MPa</strong>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Theory Comparison Table -->
+            <section id="theory-panel" class="card" aria-label="Theory Comparison">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <h2>Failure Theory Comparison</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table id="theory-table" class="theory-table">
+                        <thead>
+                            <tr>
+                                <th>Failure Theory</th>
+                                <th>Behavior</th>
+                                <th>Effective Stress (MPa)</th>
+                                <th>Factor of Safety (n)</th>
+                                <th>Status</th>
+                                <th>Interpretation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="theory-tbody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Failure Envelope Chart -->
+            <section id="chart-panel" class="card" aria-label="Failure Envelope">
+                <div class="card-header">
+                    <span class="card-icon">📈</span>
+                    <h2>Failure Envelope (Plane Stress, σ₃ = 0)</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="envelope-chart"></canvas>
+                </div>
+                <p class="chart-caption">
+                    The envelopes are drawn for plane stress (σ₃ = 0). The operating point (σ₁, σ₂) is projected onto this plane for visual comparison.
+                    Points <strong>inside</strong> the envelope are in the safe region.
+                </p>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer id="app-footer">
+            <div class="footer-note">
+                <strong>Note:</strong> Please input the stress components for the critical element. Ensure geometric properties and stress concentration factors (K<sub>t</sub>) are already accounted for in your input values. For ductile materials, use von Mises or Tresca. For brittle materials, use Maximum Normal Stress or Brittle Coulomb-Mohr.
+            </div>
+            <p class="footer-credit">Failure Theory Calculator · 3D Stress Analysis · NSYSU</p>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
